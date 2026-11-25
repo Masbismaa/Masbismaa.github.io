@@ -2,16 +2,15 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bisma Prasetya</title>
-  <meta name="description" content="Profil & semua link Bisma Prasetya">
-  <meta name="theme-color" content="#2a1410">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍁</text></svg>">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Herbarium Bisma</title>
+  <meta name="description" content="Bisma Prasetya: developer, pemilik server Classic Chronicles, pembuat bot. Semua tautan dalam satu lembar.">
+  <meta name="theme-color" content="#c4a77a">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23c4a77a'/><path d='M16 5l2.6 6.4 5.6-2.2-2 6 4.8 1.6-6 3.2.8 3.6H18v3.4h-4V23.6h-3.8l.8-3.6-6-3.2 4.8-1.6-2-6 5.6 2.2z' fill='%23a8341c'/></svg>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Reenie+Beanie&display=swap">
 
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/scene.css">
@@ -19,49 +18,28 @@
   <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
-  <!-- Animasi pembuka -->
-  <div class="loader" id="loader" aria-hidden="true">
-    <div class="loader__leaf">🍁</div>
-    <div class="loader__text">memuat musim gugur…</div>
-  </div>
+  <!-- Daun yang berguguran di latar (effects.js) -->
+  <canvas class="fall" id="fall" aria-hidden="true"></canvas>
 
-  <!-- Latar: langit, matahari, bukit berlapis (parallax) -->
-  <div class="scene" aria-hidden="true">
-    <div class="scene__sky"></div>
-    <div class="scene__sun"></div>
-    <div class="scene__hill scene__hill--back" data-depth="0.15"></div>
-    <div class="scene__hill scene__hill--mid" data-depth="0.3"></div>
-    <div class="scene__hill scene__hill--front" data-depth="0.5"></div>
-    <div class="scene__fog"></div>
-  </div>
-
-  <!-- Daun, kunang-kunang, jejak kursor digambar di canvas ini -->
-  <canvas class="fx" id="fx" aria-hidden="true"></canvas>
-
-  <!-- Konten diisi js/render.js dari js/config.js -->
-  <main class="card" id="app">
-    <header class="profile">
-      <div class="avatar" id="avatar"></div>
-      <h1 class="profile__name" id="name"></h1>
-      <p class="profile__username" id="username"></p>
-      <p class="profile__role"><span id="role"></span><span class="caret">|</span></p>
-      <p class="profile__bio" id="bio"></p>
-      <p class="profile__location" id="location"></p>
+  <!-- Isi diisi js/render.js dari js/config.js -->
+  <div class="sheet">
+    <header class="collector" id="collector">
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1 class="name" id="name"></h1>
+      <p class="hand" id="roles"></p>
+      <p class="bio" id="bio"></p>
+      <dl class="ledger" id="ledger"></dl>
+      <p class="elsewhere" id="elsewhere"></p>
+      <button class="copy" id="copy" type="button">Salin tautan halaman</button>
     </header>
 
-    <section class="stats" id="stats" aria-label="Statistik"></section>
-    <nav class="links" id="links" aria-label="Link"></nav>
-    <div class="socials" id="socials"></div>
-
-    <footer class="footer">
-      <p id="footer"></p>
-      <button class="share" id="share" type="button"><i class="fa-solid fa-share-nodes"></i> Bagikan profil</button>
-    </footer>
-  </main>
+    <main class="specimens" id="specimens" aria-label="Tautan"></main>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="js/config.js"></script>
+  <script src="js/leaves.js"></script>
   <script src="js/render.js"></script>
   <script src="js/effects.js"></script>
 </body>

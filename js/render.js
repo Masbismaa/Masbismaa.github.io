@@ -1,170 +1,124 @@
 /*
- * RENDER — membangun isi halaman dari window.PROFILE (config.js).
- * Tiap bagian punya fungsi sendiri; untuk bagian baru, buat fungsi
- * render baru lalu panggil di init() paling bawah.
- * Teks dari config selalu dipasang lewat textContent (aman dari HTML).
+ * RENDER — membangun halaman dari window.PROFILE (config.js).
+ * Satu fungsi per bagian; bagian baru = fungsi baru, panggil di init().
+ * Teks dari config dipasang lewat textContent (aman dari HTML).
  */
 (() => {
   const P = window.PROFILE;
   const $ = (sel) => document.querySelector(sel);
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SVG = "http://www.w3.org/2000/svg";
+  const COLORS = ["maple", "ochre", "rust", "moss"];
 
-  /** Buat elemen: el("a", "link", { href: "#" }, [child1, child2]) */
+  /** el("a", "kelas", { href }, [anak]) */
   function el(tag, className, attrs = {}, children = []) {
     const node = document.createElement(tag);
     if (className) node.className = className;
-    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-    for (const child of [].concat(children)) {
-      if (child == null) continue;
-      node.append(child);
-    }
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    for (const child of [].concat(children)) if (child != null) node.append(child);
     return node;
   }
 
-  const icon = (cls) => el("i", cls, { "aria-hidden": "true" });
-
-  /** Animasi masuk bertahap: tiap pemanggilan menambah jeda */
-  let delay = 0.3;
-  function reveal(node, step = 0.08) {
-    node.classList.add("reveal");
-    node.style.setProperty("--delay", `${delay.toFixed(2)}s`);
-    delay += step;
+  function svg(tag, attrs = {}) {
+    const node = document.createElementNS(SVG, tag);
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
     return node;
   }
 
-  // ---------- Profil ----------
-  function renderAvatar() {
-    const box = $("#avatar");
-    if (P.avatar) {
-      box.append(el("img", "", { src: P.avatar, alt: `Foto ${P.name}` }));
-    } else {
-      const initials = P.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-      box.textContent = initials;
-      box.setAttribute("role", "img");
-      box.setAttribute("aria-label", P.name);
+  const pad = (n) => String(n).padStart(2, "0");
+  // "Lokasi" spesimen: alamat tanpa https:// dan www., mis. discord.gg/5nZCnXZaN5
+  const host = (url) => {
+    try {
+      const u = new URL(url);
+      return (u.host + u.pathname).replace(/^www\./, "").replace(/\/$/, "");
+    } catch { return url; }
+  };
+
+  // Miring tiap spesimen dibuat tetap (bukan acak) supaya tata letak tidak berubah tiap dibuka
+  const tiltOf = (i) => [-2.2, 1.6, -0.8, 2.4, -1.4, 0.9][i % 6];
+
+  // ---------- Kolom kolektor (kiri) ----------
+  function renderCollector() {
+    $("#eyebrow").textContent = `Herbarium · ${P.season}`;
+
+    const name = $("#name");
+    name.textContent = P.name;
+    // coretan garis bawah tangan, digambar saat halaman dibuka
+    const scribble = svg("svg", { class: "scribble", viewBox: "0 0 320 18", preserveAspectRatio: "none", "aria-hidden": "true" });
+    scribble.append(svg("path", { d: "M3 12 C 50 4, 110 15, 170 8 S 270 6, 317 11", pathLength: "1" }));
+    name.append(scribble);
+
+    const roles = $("#roles");
+    if (P.roles?.length) roles.textContent = P.roles.join(", ");
+    else roles.remove();
+
+    $("#bio").textContent = P.bio ?? "";
+
+    if (P.photo) {
+      const photo = el("figure", "photo", {}, el("img", "", { src: P.photo, alt: `Foto ${P.name}` }));
+      $("#collector").prepend(photo);
     }
-    // daun kecil yang mengorbit
-    const orbit = el("div", "orbit", { "aria-hidden": "true" });
-    ["🍁", "🍂", "🍃", "🍁"].forEach((leaf, i) => {
-      const span = el("span", "", {}, leaf);
-      span.style.setProperty("--a", `${i * 90}deg`);
-      orbit.append(span);
+
+    // Data katalog: istilah herbarium sungguhan (kolektor, lokasi, jumlah spesimen)
+    const rows = [
+      ["Kolektor", P.name],
+      ["Nama pena", P.handle],
+      ["Lokasi", P.location],
+      ["Spesimen", `${P.links.filter((l) => l.url).length} lembar`]
+    ];
+    const ledger = $("#ledger");
+    for (const [k, v] of rows) {
+      if (!v) continue;
+      ledger.append(el("div", "ledger__row", {}, [el("dt", "", {}, k), el("dd", "", {}, v)]));
+    }
+
+    const elsewhere = $("#elsewhere");
+    const socials = (P.socials ?? []).filter((s) => s.url);
+    if (!socials.length) return elsewhere.remove();
+    elsewhere.append("Juga ditemukan di ");
+    socials.forEach((s, i) => {
+      if (i) elsewhere.append(i === socials.length - 1 ? " dan " : ", ");
+      elsewhere.append(el("a", "", { href: s.url, target: "_blank", rel: "noopener noreferrer" }, s.name));
     });
-    box.append(orbit);
-    reveal(box, 0.15);
+    elsewhere.append(".");
   }
 
-  function renderName() {
-    const h1 = $("#name");
-    h1.setAttribute("aria-label", P.name);
-    // tiap huruf jatuh satu per satu
-    for (const ch of P.name) {
-      const span = el("span", "char", { "aria-hidden": "true" }, ch === " " ? " " : ch);
-      reveal(span, 0.04);
-      h1.append(span);
-    }
+  // ---------- Spesimen (kanan) ----------
+  function leafSvg(kind) {
+    const node = svg("svg", { class: "leaf", viewBox: "-52 -52 104 104", "aria-hidden": "true" });
+    node.append(
+      svg("path", { class: "leaf__blade", d: window.Leaves.blade(kind) }),
+      svg("path", { class: "leaf__veins", d: window.Leaves.veins(kind) })
+    );
+    return node;
   }
 
-  function renderText(selector, value, iconClass) {
-    const node = $(selector);
-    if (!value) return node.remove();
-    if (iconClass) node.append(icon(iconClass));
-    node.append(value);
-    reveal(node);
-  }
+  function renderSpecimens() {
+    const box = $("#specimens");
+    P.links.filter((l) => l.url).forEach((link, i) => {
+      const kind = link.leaf || window.Leaves.KINDS[i % window.Leaves.KINDS.length];
+      const color = link.color || COLORS[i % COLORS.length];
 
-  /** Efek mengetik yang berganti-ganti antar roles */
-  function typewriter(target, words) {
-    if (!words?.length) return target.parentElement.remove();
-    reveal(target.parentElement);
-    if (reduceMotion) return (target.textContent = words.join(" · "));
-
-    let word = 0, char = 0, deleting = false;
-    const tick = () => {
-      const current = words[word];
-      char += deleting ? -1 : 1;
-      target.textContent = current.slice(0, char);
-
-      let wait = deleting ? 45 : 95;
-      if (!deleting && char === current.length) { deleting = true; wait = 1600; }
-      else if (deleting && char === 0) { deleting = false; word = (word + 1) % words.length; wait = 350; }
-      setTimeout(tick, wait);
-    };
-    setTimeout(tick, 1400);
-  }
-
-  // ---------- Statistik ----------
-  function countUp(node, to, suffix = "") {
-    if (reduceMotion) return (node.textContent = to + suffix);
-    const duration = 1600;
-    const start = performance.now();
-    const frame = (now) => {
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      node.textContent = Math.round(to * eased) + suffix;
-      if (t < 1) requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
-  }
-
-  function renderStats() {
-    const box = $("#stats");
-    if (!P.stats?.length) return box.remove();
-    for (const s of P.stats) {
-      const value = el("div", "stat__value", {}, "0");
-      box.append(reveal(el("div", "stat", {}, [value, el("div", "stat__label", {}, s.label)])));
-      setTimeout(() => countUp(value, s.value, s.suffix), delay * 1000);
-    }
-  }
-
-  // ---------- Link ----------
-  function renderLinks() {
-    const box = $("#links");
-    for (const link of P.links ?? []) {
-      if (!link.url) continue;
-      const card = el("a", `link${link.highlight ? " link--highlight" : ""}`, {
-        href: link.url, target: "_blank", rel: "noopener noreferrer"
-      }, [
-        el("span", "link__icon", {}, icon(link.icon || "fa-solid fa-link")),
-        el("span", "link__text", {}, [
-          el("span", "link__title", {}, link.title),
-          link.description ? el("span", "link__desc", {}, link.description) : null
-        ]),
-        icon("fa-solid fa-arrow-right link__arrow"),
-        link.badge ? el("span", "link__badge", {}, link.badge) : null
+      const card = el("a", "specimen", { href: link.url, target: "_blank", rel: "noopener noreferrer" }, [
+        el("span", "tape tape--left", { "aria-hidden": "true" }),
+        el("span", "tape tape--right", { "aria-hidden": "true" }),
+        el("span", "specimen__mount", {}, leafSvg(kind)),
+        el("span", "label", {}, [
+          el("span", "label__no", {}, `No. ${pad(i + 1)}`),
+          el("span", "label__title", {}, link.title),
+          link.note ? el("span", "label__note", {}, link.note) : null,
+          el("span", "label__loc", {}, [host(link.url), el("span", "label__go", { "aria-hidden": "true" }, " ↗")])
+        ])
       ]);
-      box.append(reveal(card, 0.1));
-    }
+      card.style.setProperty("--tilt", `${tiltOf(i)}deg`);
+      card.style.setProperty("--leaf", `var(--${color})`);
+      card.style.setProperty("--i", i);
+      // seberapa lentur spesimen ini saat angin bertiup
+      card.style.setProperty("--flex", (0.6 + (i % 3) * 0.25).toFixed(2));
+      box.append(card);
+    });
   }
 
-  // ---------- Sosial ----------
-  function renderSocials() {
-    const box = $("#socials");
-    if (!P.socials?.length) return box.remove();
-    for (const s of P.socials) {
-      if (!s.url) continue;
-      box.append(reveal(el("a", "social", {
-        href: s.url, target: "_blank", rel: "noopener noreferrer", "aria-label": s.name, title: s.name
-      }, icon(s.icon)), 0.07));
-    }
-  }
-
-  function init() {
-    document.title = P.name;
-    // .reveal dilepas setelah kartu muncul, supaya efek "tertiup angin" tidak memutar ulang animasi masuk
-    const app = reveal($("#app"), 0.2);
-    app.addEventListener("animationend", (e) => { if (e.target === app) app.classList.remove("reveal"); });
-    renderAvatar();
-    renderName();
-    renderText("#username", P.username);
-    typewriter($("#role"), P.roles);
-    renderText("#bio", P.bio);
-    renderText("#location", P.location, "fa-solid fa-location-dot");
-    renderStats();
-    renderLinks();
-    renderSocials();
-    $("#footer").textContent = P.footer ?? "";
-  }
-
-  init();
+  renderCollector();
+  renderSpecimens();
+  document.documentElement.classList.add("is-ready");
 })();

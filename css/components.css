@@ -1,279 +1,248 @@
 /* ============================================================
-   COMPONENTS — avatar, teks profil, statistik, kartu link,
-   ikon sosial, footer, toast, loader.
+   COMPONENTS
+   - Kolom kolektor: identitas, catatan tangan, buku katalog
+   - Spesimen: kertas, selotip, daun, label katalog
+   - Toast
    ============================================================ */
 
-/* ---------- Profil ---------- */
-.profile { text-align: center; }
+/* ---------- Kolom kolektor ---------- */
+.collector {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-self: start;
+}
+@media (min-width: 861px) {
+  .collector { position: sticky; top: 3rem; }
+}
 
-.avatar {
-  position: relative;
-  width: 116px;
-  height: 116px;
-  margin: 8px auto 34px; /* ruang untuk daun yang mengorbit */
-  border-radius: 50%;
+.eyebrow {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.name {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: var(--fs-name);
+  line-height: 0.92;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.scribble {
+  display: block;
+  width: 72%;
+  height: 0.16em;
+  margin-top: 0.12em;
+  overflow: visible;
+}
+.scribble path {
+  fill: none;
+  stroke: var(--maple);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.hand {
+  font-family: var(--hand);
+  font-size: var(--fs-hand);
+  line-height: 1;
+  color: var(--maple);
+  rotate: -2deg;
+  transform-origin: left center;
+}
+
+.bio { max-width: 34ch; }
+
+.ledger {
   display: grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-size: 40px;
-  font-weight: 800;
-  color: var(--night);
-  background: linear-gradient(135deg, var(--gold), var(--pumpkin));
-  isolation: isolate;
+  border-top: 1px dashed var(--ink-faint);
 }
-.avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-
-/* Cincin api berputar di belakang avatar */
-.avatar::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  z-index: -1;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, var(--maple), var(--amber), var(--gold), var(--pumpkin), var(--maple));
-  animation: spin 6s linear infinite;
-}
-/* Glow berdenyut */
-.avatar::after {
-  content: "";
-  position: absolute;
-  inset: -18px;
-  z-index: -2;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(245, 176, 65, 0.55), transparent 70%);
-  animation: glow 3s ease-in-out infinite;
-}
-/* Daun kecil yang mengorbit avatar (dibuat render.js) */
-.orbit {
-  position: absolute;
-  inset: -22px;
-  border-radius: 50%;
-  animation: spin 14s linear infinite;
-  pointer-events: none;
-}
-.orbit span {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  font-size: 18px;
-  line-height: 20px;
-  text-align: center;
-  /* sudut tiap daun diisi render.js lewat --a */
-  transform: rotate(var(--a)) translateY(-74px) rotate(calc(var(--a) * -1));
-}
-
-.profile__name {
-  font-family: var(--font-display);
-  font-size: clamp(28px, 7vw, 36px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  background: linear-gradient(90deg, var(--gold), var(--pumpkin), var(--maple), var(--amber), var(--gold));
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shimmer 8s linear infinite;
-}
-/* Tiap huruf membawa gradiennya sendiri: huruf yang dianimasikan tidak ikut terpotong background-clip induknya */
-.profile__name .char {
-  display: inline-block;
-  background: inherit;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.profile__username { margin-top: 4px; color: var(--muted); font-size: 14px; }
-.profile__role {
-  margin-top: 10px;
-  min-height: 1.5em;
-  font-weight: 700;
-  color: var(--amber);
-}
-.caret { margin-left: 2px; animation: blink 1s steps(1) infinite; }
-.profile__bio { margin: 10px auto 0; max-width: 36ch; color: var(--cream); opacity: 0.9; font-size: 15px; }
-.profile__location { margin-top: 8px; font-size: 13px; color: var(--muted); }
-.profile__location i { color: var(--maple); margin-right: 4px; }
-
-/* ---------- Statistik ---------- */
-.stats {
+.ledger__row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 10px;
-  margin: 24px 0 8px;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px dashed var(--ink-faint);
+  font-size: var(--fs-sm);
 }
-.stat {
-  padding: 12px 8px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 210, 122, 0.06);
-  border: 1px solid var(--border);
-  text-align: center;
-  transition: transform 0.3s var(--ease-bounce), background 0.3s;
+.ledger dt {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding-top: 0.15em;
 }
-.stat:hover { transform: translateY(-4px) scale(1.04); background: rgba(255, 210, 122, 0.12); }
-.stat__value { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--gold); }
-.stat__label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.ledger dd { overflow-wrap: anywhere; }
 
-/* ---------- Kartu link ---------- */
-.links { display: grid; gap: 12px; margin-top: 22px; perspective: 900px; }
+.elsewhere { font-size: var(--fs-sm); color: var(--ink-soft); }
+.elsewhere a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--maple);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.elsewhere a:hover { color: var(--maple); }
 
-.link {
-  --rx: 0deg;
-  --ry: 0deg;
-  --mx: 50%;
-  --my: 50%;
+.copy {
+  align-self: start;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--ink);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.25s, color 0.25s;
+}
+.copy:hover { background: var(--ink); color: var(--sheet); }
+
+.photo {
+  align-self: start;
+  width: 9.5rem;
+  padding: 0.5rem 0.5rem 1.75rem;
+  background: var(--sheet);
+  rotate: -3deg;
+  box-shadow: 0 12px 20px -12px rgba(60, 40, 18, 0.55);
+}
+.photo img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+
+/* ---------- Spesimen ---------- */
+.specimens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 3rem 2.25rem;
+  align-items: start;
+}
+/* Kolom kedua turun sedikit, seperti lembar yang ditempel tangan */
+@media (min-width: 600px) {
+  .specimen:nth-child(even) { margin-top: 3.5rem; }
+}
+
+.specimen {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  transform-style: preserve-3d;
-  transition: transform 0.25s var(--ease-out), border-color 0.3s, box-shadow 0.3s;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.75rem 1.25rem 1.25rem;
+  background-color: var(--sheet);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0 0.2 0 0 0 0.12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+  text-decoration: none;
+  /* digantung dari selotip: berputar dari tepi atas, ikut bergoyang saat angin (--gust) */
+  transform-origin: 50% 0;
+  rotate: calc(var(--tilt, 0deg) + var(--gust) * var(--flex, 1) * 1.8deg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 2px 3px rgba(60, 40, 18, 0.18),
+    0 18px 28px -18px rgba(60, 40, 18, 0.6);
+  transition: translate 0.45s var(--ease), box-shadow 0.45s var(--ease);
 }
-/* Sorotan cahaya mengikuti mouse */
-.link::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(220px circle at var(--mx) var(--my), rgba(255, 210, 122, 0.22), transparent 60%);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-/* Kilau menyapu saat hover */
-.link::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -60%;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(100deg, transparent, rgba(255, 244, 227, 0.25), transparent);
-  transform: skewX(-20deg);
-}
-.link:hover { border-color: rgba(255, 210, 122, 0.55); box-shadow: 0 14px 40px -12px rgba(240, 127, 42, 0.55); }
-.link:hover::before { opacity: 1; }
-.link:hover::after { animation: sweep 0.9s var(--ease-out); }
-.link:active { transform: scale(0.97); }
-
-.link--highlight {
-  border-color: rgba(255, 210, 122, 0.6);
-  background: linear-gradient(120deg, rgba(217, 72, 28, 0.55), rgba(240, 127, 42, 0.35));
-  animation: pulse-ring 2.6s ease-out infinite;
+.specimen:hover,
+.specimen:focus-visible {
+  translate: 0 -6px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 4px 6px rgba(60, 40, 18, 0.16),
+    0 30px 40px -22px rgba(60, 40, 18, 0.7);
 }
 
-.link__icon {
-  flex: none;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+/* Selotip: tepi bergerigi lewat clip-path, terangkat sedikit saat angin */
+.tape {
+  position: absolute;
+  top: -0.7rem;
+  width: 4.75rem;
+  height: 1.45rem;
+  background: var(--tape);
+  box-shadow: 0 1px 2px rgba(60, 40, 18, 0.15);
+  clip-path: polygon(0 8%, 6% 0, 12% 10%, 20% 2%, 30% 8%, 42% 0, 55% 6%, 68% 0, 80% 9%, 90% 1%, 100% 7%,
+                     100% 92%, 93% 100%, 84% 91%, 72% 99%, 60% 92%, 48% 100%, 36% 93%, 24% 100%, 12% 92%, 4% 99%, 0 93%);
+}
+.tape--left  { left: 0.9rem;  rotate: calc(-7deg - var(--gust) * 3deg); }
+.tape--right { right: 0.9rem; rotate: calc(6deg + var(--gust) * 3deg); }
+
+.specimen__mount {
   display: grid;
   place-items: center;
-  font-size: 20px;
-  color: var(--night);
-  background: linear-gradient(135deg, var(--gold), var(--pumpkin));
-  transform: translateZ(30px);
-  transition: transform 0.4s var(--ease-bounce);
+  aspect-ratio: 1;
+  max-width: 100%;
 }
-.link:hover .link__icon { transform: translateZ(30px) rotate(-12deg) scale(1.12); animation: wiggle 0.6s ease-in-out; }
-
-.link__text { flex: 1; min-width: 0; transform: translateZ(20px); }
-.link__title { display: block; font-weight: 700; font-size: 15px; }
-.link__desc { display: block; font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.link__arrow { flex: none; color: var(--amber); transition: transform 0.3s var(--ease-bounce); }
-.link:hover .link__arrow { transform: translateX(5px); }
-
-.link__badge {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--night);
-  background: var(--gold);
-  animation: bob 2s ease-in-out infinite;
+/* HP: satu kolom lebar, area daun dipendekkan supaya kartu tidak setinggi layar */
+@media (max-width: 599px) {
+  .specimen__mount { aspect-ratio: auto; }
+  .specimen__mount .leaf { width: 54%; }
 }
 
-/* Riak air saat diklik (span dibuat effects.js) */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 210, 122, 0.45);
-  transform: scale(0);
-  animation: ripple 0.7s var(--ease-out) forwards;
-  pointer-events: none;
+.leaf {
+  width: 82%;
+  height: auto;
+  overflow: visible;
+  transform-origin: 50% 96%;  /* bergoyang dari pangkal tangkai */
+  rotate: calc(var(--gust) * var(--flex, 1) * 9deg);
+  filter: drop-shadow(0 2px 1.5px rgba(60, 40, 18, 0.28));
+  transition: scale 0.5s var(--ease);
+}
+.specimen:hover .leaf { scale: 1.05; }
+
+.leaf__blade { fill: var(--leaf, var(--maple)); }
+.leaf__veins {
+  fill: none;
+  stroke: rgba(43, 33, 24, 0.38);
+  stroke-width: 1.3;
+  stroke-linecap: round;
 }
 
-/* ---------- Sosial ---------- */
-.socials { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
-.social {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+/* Label katalog herbarium di pojok kanan bawah */
+.label {
+  align-self: flex-end;
   display: grid;
-  place-items: center;
-  font-size: 20px;
-  background: rgba(255, 210, 122, 0.08);
-  border: 1px solid var(--border);
-  transition: transform 0.35s var(--ease-bounce), background 0.3s, color 0.3s;
+  gap: 0.15rem;
+  width: min(100%, 13.5rem);
+  padding: 0.6rem 0.75rem 0.65rem;
+  border: 1px solid var(--ink-faint);
+  background: rgba(255, 252, 244, 0.55);
 }
-.social:hover { transform: translateY(-6px) rotate(8deg) scale(1.1); background: var(--pumpkin); color: var(--night); }
-
-/* ---------- Footer ---------- */
-.footer { margin-top: 26px; text-align: center; font-size: 13px; color: var(--muted); }
-.share {
-  margin-top: 12px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  font-size: 13px;
-  transition: background 0.3s, transform 0.3s var(--ease-bounce);
+.label__no,
+.label__loc {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
 }
-.share:hover { background: rgba(255, 210, 122, 0.12); transform: scale(1.05); }
+.label__title {
+  font-family: var(--display);
+  font-size: 1.4rem;
+  line-height: 1.15;
+}
+.label__note { font-size: var(--fs-sm); color: var(--ink-soft); line-height: 1.4; }
+.label__loc {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--ink-faint);
+  overflow-wrap: anywhere;
+}
+.label__go { color: var(--maple); display: inline-block; transition: translate 0.3s var(--ease); }
+.specimen:hover .label__go { translate: 2px -2px; }
 
 /* ---------- Toast ---------- */
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
   z-index: 10;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--night);
-  font-weight: 700;
-  font-size: 14px;
+  padding: 0.6rem 1rem;
+  background: var(--ink);
+  color: var(--sheet);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
   opacity: 0;
+  translate: -50% 1rem;
   pointer-events: none;
-  transform: translate(-50%, calc(100% + 40px));
-  transition: transform 0.45s var(--ease-bounce), opacity 0.3s;
+  transition: opacity 0.3s, translate 0.4s var(--ease);
 }
-.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
-
-/* ---------- Loader ---------- */
-.loader {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 12px;
-  background: var(--night);
-  transition: opacity 0.7s, visibility 0.7s;
-}
-.loader.is-done { opacity: 0; visibility: hidden; }
-.loader__leaf { font-size: 56px; animation: loader-leaf 1.4s ease-in-out infinite; }
-.loader__text { font-family: var(--font-display); color: var(--amber); letter-spacing: 0.1em; animation: blink 1.4s ease-in-out infinite; }
+.toast.is-show { opacity: 1; translate: -50% 0; }
